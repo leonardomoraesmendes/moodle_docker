@@ -1,0 +1,29 @@
+version: '3.2'
+services:
+  ead:
+    build: .
+    ports:
+      - "80:80"
+    links:
+      - "dbserver"
+      - "redis"
+    volumes:
+      - type: volume
+        source: "moodledata"
+        target: /var/www/moodledata
+  
+  dbserver:
+    image: dexter-dbserver
+    ports:
+      - "3306:3306"
+    volumes:
+      - "${HOME}/banco:/var/lib/mysql"
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  moodledata:
+    external: true
