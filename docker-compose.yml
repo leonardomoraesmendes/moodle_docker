@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   ead:
-    build: .
+    image: moodle2
     ports:
       - "80:80"
     links:
@@ -13,11 +13,18 @@ services:
         target: /var/www/moodledata
   
   dbserver:
-    image: dexter-dbserver
+    image: mysql:5.7
     ports:
       - "3306:3306"
     volumes:
-      - "${HOME}/banco:/var/lib/mysql"
+      - type: volume
+        source: "banco_moodle"
+        target: /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 4linux
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodleuser
+      MYSQL_PASSWORD: 4linux
 
   redis:
     image: redis
@@ -26,4 +33,6 @@ services:
 
 volumes:
   moodledata:
+    external: true
+  banco_moodle:
     external: true
