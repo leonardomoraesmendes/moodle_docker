@@ -525,6 +525,38 @@ class core_moodlelib_testcase extends advanced_testcase {
         $this->assertSame('', clean_param('user_', PARAM_COMPONENT));
     }
 
+    public function test_clean_param_localisedfloat() {
+
+        $this->assertSame(0.5, clean_param('0.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('0X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(0.5, clean_param('.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(10.5, clean_param('10.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('10X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(1000.5, clean_param('1 000.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('1 000X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('1.000.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('1X000X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('nan', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('10.6blah', PARAM_LOCALISEDFLOAT));
+
+        // Tests with a localised decimal separator.
+        $this->define_local_decimal_separator();
+
+        $this->assertSame(0.5, clean_param('0.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(0.5, clean_param('0X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(0.5, clean_param('.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(0.5, clean_param('X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(10.5, clean_param('10.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(10.5, clean_param('10X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(1000.5, clean_param('1 000.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(1000.5, clean_param('1 000X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('1.000.5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('1X000X5', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('nan', PARAM_LOCALISEDFLOAT));
+        $this->assertSame(false, clean_param('10X6blah', PARAM_LOCALISEDFLOAT));
+    }
+
     public function test_is_valid_plugin_name() {
         $this->assertTrue(is_valid_plugin_name('forum'));
         $this->assertTrue(is_valid_plugin_name('forum2'));
@@ -1714,73 +1746,85 @@ class core_moodlelib_testcase extends advanced_testcase {
                 'time' => '1309514400',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => '0.0', // No dst offset.
-                'expectedoutput' => 'Friday, 1 July 2011, 10:00 AM'
+                'expectedoutput' => 'Friday, 1 July 2011, 10:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-07-01T07:00:00-03:00">Friday, 1 July 2011, 10:00 AM</time>'
             ),
             array(
                 'time' => '1309514400',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => '99', // Dst offset and timezone offset.
-                'expectedoutput' => 'Friday, 1 July 2011, 7:00 AM'
+                'expectedoutput' => 'Friday, 1 July 2011, 7:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-07-01T07:00:00-03:00">Friday, 1 July 2011, 7:00 AM</time>'
             ),
             array(
                 'time' => '1309514400',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => 'America/Moncton', // Dst offset and timezone offset.
-                'expectedoutput' => 'Friday, 1 July 2011, 7:00 AM'
+                'expectedoutput' => 'Friday, 1 July 2011, 7:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-07-01t07:00:00-03:00">Friday, 1 July 2011, 7:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => '0.0', // No dst offset.
-                'expectedoutput' => 'Saturday, 1 January 2011, 10:00 AM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 10:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T06:00:00-04:00">Saturday, 1 January 2011, 10:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => '99', // No dst offset in jan, so just timezone offset.
-                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 AM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T06:00:00-04:00">Saturday, 1 January 2011, 6:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => 'America/Moncton',
                 'timezone' => 'America/Moncton', // No dst offset in jan.
-                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 AM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T06:00:00-04:00">Saturday, 1 January 2011, 6:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '2',
                 'timezone' => '99', // Take user timezone.
-                'expectedoutput' => 'Saturday, 1 January 2011, 12:00 PM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 12:00 PM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T12:00:00+02:00">Saturday, 1 January 2011, 12:00 PM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '-2',
                 'timezone' => '99', // Take user timezone.
-                'expectedoutput' => 'Saturday, 1 January 2011, 8:00 AM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 8:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T08:00:00-02:00">Saturday, 1 January 2011, 8:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '-10',
                 'timezone' => '2', // Take this timezone.
-                'expectedoutput' => 'Saturday, 1 January 2011, 12:00 PM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 12:00 PM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T00:00:00-10:00">Saturday, 1 January 2011, 12:00 PM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '-10',
                 'timezone' => '-2', // Take this timezone.
-                'expectedoutput' => 'Saturday, 1 January 2011, 8:00 AM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 8:00 AM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T00:00:00-10:00">Saturday, 1 January 2011, 8:00 AM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '-10',
                 'timezone' => 'random/time', // This should show server time.
-                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 PM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 PM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T00:00:00-10:00">Saturday, 1 January 2011, 6:00 PM</time>'
             ),
             array(
                 'time' => '1293876000 ',
                 'usertimezone' => '20', // Fallback to server time zone.
                 'timezone' => '99',     // This should show user time.
-                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 PM'
+                'expectedoutput' => 'Saturday, 1 January 2011, 6:00 PM',
+                'expectedoutputhtml' => '<time datetime="2011-01-01T18:00:00+08:00">Saturday, 1 January 2011, 6:00 PM</time>'
             ),
         );
 
@@ -1791,13 +1835,18 @@ class core_moodlelib_testcase extends advanced_testcase {
         foreach ($testvalues as $vals) {
             $USER->timezone = $vals['usertimezone'];
             $actualoutput = userdate($vals['time'], '%A, %d %B %Y, %I:%M %p', $vals['timezone']);
+            $actualoutputhtml = userdate_htmltime($vals['time'], '%A, %d %B %Y, %I:%M %p', $vals['timezone']);
 
             // On different systems case of AM PM changes so compare case insensitive.
             $vals['expectedoutput'] = core_text::strtolower($vals['expectedoutput']);
+            $vals['expectedoutputhtml'] = core_text::strtolower($vals['expectedoutputhtml']);
             $actualoutput = core_text::strtolower($actualoutput);
+            $actualoutputhtml = core_text::strtolower($actualoutputhtml);
 
             $this->assertSame($vals['expectedoutput'], $actualoutput,
                 "Expected: {$vals['expectedoutput']} => Actual: {$actualoutput} \ndata: " . var_export($vals, true));
+            $this->assertSame($vals['expectedoutputhtml'], $actualoutputhtml,
+                "Expected: {$vals['expectedoutputhtml']} => Actual: {$actualoutputhtml} \ndata: " . var_export($vals, true));
         }
     }
 
@@ -2412,7 +2461,8 @@ class core_moodlelib_testcase extends advanced_testcase {
             'contextlevel' => $obj->contextlevel,
             'instanceid'   => $obj->instanceid,
             'path'         => $obj->path,
-            'depth'        => $obj->depth
+            'depth'        => $obj->depth,
+            'locked'       => $obj->locked,
         );
         $this->assertEquals(convert_to_array($obj), $ar);
     }
@@ -4374,5 +4424,21 @@ class core_moodlelib_testcase extends advanced_testcase {
         } else {
             $this->assertFalse($fetcheduser);
         }
+    }
+
+    /**
+     * Test for send_password_change_().
+     */
+    public function test_send_password_change_info() {
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+
+        $sink = $this->redirectEmails(); // Make sure we are redirecting emails.
+        send_password_change_info($user);
+        $result = $sink->get_messages();
+        $sink->close();
+
+        $this->assertContains('passwords cannot be reset on this site', $result[0]->body);
     }
 }

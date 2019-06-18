@@ -1445,6 +1445,46 @@ class behat_general extends behat_base {
     }
 
     /**
+     * Checks that the image on the page is the same as one of the fixture files
+     *
+     * @Then /^the image at "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" should be identical to "(?P<filepath_string>(?:[^"]|\\")*)"$/
+     * @throws ExpectationException
+     * @param string $element The locator of the image
+     * @param string $selectortype The selector type
+     * @param string $filepath path to the fixture file
+     */
+    public function the_image_at_should_be_identical_to($element, $selectortype, $filepath) {
+        global $CFG;
+
+        // Get the container node (exception if it doesn't exist).
+        $containernode = $this->get_selected_node($selectortype, $element);
+        $url = $containernode->getAttribute('src');
+        if ($url == null) {
+            throw new ExpectationException('Element does not have src attribute',
+                $this->getSession());
+        }
+        $session = $this->getSession()->getCookie('MoodleSession');
+        $content = download_file_content($url, array('Cookie' => 'MoodleSession=' . $session));
+
+        // Get the content of the fixture file.
+        // Replace 'admin/' if it is in start of path with $CFG->admin .
+        if (substr($filepath, 0, 6) === 'admin/') {
+            $filepath = $CFG->admin . DIRECTORY_SEPARATOR . substr($filepath, 6);
+        }
+        $filepath = str_replace('/', DIRECTORY_SEPARATOR, $filepath);
+        $filepath = $CFG->dirroot . DIRECTORY_SEPARATOR . $filepath;
+        if (!is_readable($filepath)) {
+            throw new ExpectationException('The file to compare to does not exist.', $this->getSession());
+        }
+        $expectedcontent = file_get_contents($filepath);
+
+        if ($content !== $expectedcontent) {
+            throw new ExpectationException('Image is not identical to the fixture. Received ' .
+            strlen($content) . ' bytes and expected ' . strlen($expectedcontent) . ' bytes');
+        }
+    }
+
+    /**
      * Prepare to detect whether or not a new page has loaded (or the same page reloaded) some time in the future.
      *
      * @Given /^I start watching to see if a new page loads$/
@@ -1743,5 +1783,20 @@ class behat_general extends behat_base {
 
         $value = ($shift == ' shift') ? [\WebDriver\Key::SHIFT . \WebDriver\Key::TAB] : [\WebDriver\Key::TAB];
         $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue(['value' => $value]);
+    }
+
+    /**
+     * Trigger click on node via javascript instead of actually clicking on it via pointer.
+     * This function resolves the issue of nested elements.
+     *
+     * @When /^I click on "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" skipping visibility check$/
+     * @param string $element
+     * @param string $selectortype
+     */
+    public function i_click_on_skipping_visibility_check($element, $selectortype) {
+
+        // Gets the node based on the requested selector type and locator.
+        $node = $this->get_selected_node($selectortype, $element);
+        $this->js_trigger_click($node);
     }
 }

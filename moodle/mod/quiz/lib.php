@@ -28,7 +28,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/eventslib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 
 
@@ -204,6 +203,7 @@ function quiz_delete_instance($id) {
     }
 
     quiz_grade_item_delete($quiz);
+    // We must delete the module record after we delete the grade item.
     $DB->delete_records('quiz', array('id' => $quiz->id));
 
     return true;
@@ -579,32 +579,6 @@ function quiz_user_complete($course, $user, $mod, $quiz) {
     return true;
 }
 
-/**
- * Quiz periodic clean-up tasks.
- */
-function quiz_cron() {
-    global $CFG;
-
-    require_once($CFG->dirroot . '/mod/quiz/cronlib.php');
-    mtrace('');
-
-    $timenow = time();
-    $overduehander = new mod_quiz_overdue_attempt_updater();
-
-    $processto = $timenow - get_config('quiz', 'graceperiodmin');
-
-    mtrace('  Looking for quiz overdue quiz attempts...');
-
-    list($count, $quizcount) = $overduehander->update_overdue_attempts($timenow, $processto);
-
-    mtrace('  Considered ' . $count . ' attempts in ' . $quizcount . ' quizzes.');
-
-    // Run cron for our sub-plugin types.
-    cron_execute_plugin_type('quiz', 'quiz reports');
-    cron_execute_plugin_type('quizaccess', 'quiz access rules');
-
-    return true;
-}
 
 /**
  * @param int|array $quizids A quiz ID, or an array of quiz IDs.
@@ -2277,16 +2251,14 @@ function mod_quiz_get_completion_active_rule_descriptions($cm) {
     foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
         switch ($key) {
             case 'completionattemptsexhausted':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionattemptsexhausteddesc', 'quiz');
                 }
-                $descriptions[] = get_string('completionattemptsexhausteddesc', 'quiz');
                 break;
             case 'completionpass':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionpassdesc', 'quiz', format_time($val));
                 }
-                $descriptions[] = get_string('completionpassdesc', 'quiz', format_time($val));
                 break;
             default:
                 break;

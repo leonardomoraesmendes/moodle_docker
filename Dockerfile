@@ -1,16 +1,16 @@
-FROM debian:9
-COPY sources.list /etc/apt/sources.list
-RUN apt update && apt install apache2 php libapache2-mod-php php-mysql php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip php-cli php-redis -y
-
-COPY moodle /var/www/html/moodle
-COPY ead.conf /etc/apache2/sites-available/ead.conf
-
-RUN 	chown -R www-data:www-data /var/www/ ;\
-	find /var/www/html/moodle/ -type d -exec chmod 750 {} \; ;\
-	find /var/www/html/moodle/ -type f -exec chmod 640 {} \; ;\
-	a2enmod rewrite ;\
-	a2dissite 000-default ;\
-	a2ensite ead 
-
-EXPOSE 80
-CMD ["apachectl", "-D", "FOREGROUND"]
+FROM alpine
+RUN apk update && apk add --no-cache \
+    apache2 \
+    php7 \
+    php7-apache2 \
+    mysql-client \
+    php7-fpm \
+    php7-iconv \
+    php7-curl \
+    php7-zip \
+    php7-mysqli \
+    && sed -i 's/#ServerName www.example.com:80/ServerName ead.example.com:80/' /etc/apache2/httpd.conf
+COPY --chown=apache:apache moodle/ /var/www/moodle
+COPY --chown=apache:apache moodledata/ /var/www/moodledata
+COPY moodle.conf /etc/apache2/conf.d/
+CMD ["httpd"]

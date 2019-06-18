@@ -534,10 +534,9 @@ function mod_assign_get_completion_active_rule_descriptions($cm) {
     foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
         switch ($key) {
             case 'completionsubmit':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionsubmit', 'assign');
                 }
-                $descriptions[] = get_string('completionsubmit', 'assign');
                 break;
             default:
                 break;
@@ -1256,39 +1255,6 @@ function assign_get_view_actions() {
  */
 function assign_get_post_actions() {
     return array('upload', 'submit', 'submit for grading');
-}
-
-/**
- * Call cron on the assign module.
- */
-function assign_cron() {
-    global $CFG;
-
-    require_once($CFG->dirroot . '/mod/assign/locallib.php');
-    assign::cron();
-
-    $plugins = core_component::get_plugin_list('assignsubmission');
-
-    foreach ($plugins as $name => $plugin) {
-        $disabled = get_config('assignsubmission_' . $name, 'disabled');
-        if (!$disabled) {
-            $class = 'assign_submission_' . $name;
-            require_once($CFG->dirroot . '/mod/assign/submission/' . $name . '/locallib.php');
-            $class::cron();
-        }
-    }
-    $plugins = core_component::get_plugin_list('assignfeedback');
-
-    foreach ($plugins as $name => $plugin) {
-        $disabled = get_config('assignfeedback_' . $name, 'disabled');
-        if (!$disabled) {
-            $class = 'assign_feedback_' . $name;
-            require_once($CFG->dirroot . '/mod/assign/feedback/' . $name . '/locallib.php');
-            $class::cron();
-        }
-    }
-
-    return true;
 }
 
 /**
@@ -2056,4 +2022,30 @@ function mod_assign_core_calendar_event_timestart_updated(\calendar_event $event
         $event = \core\event\course_module_updated::create_from_cm($coursemodule, $context);
         $event->trigger();
     }
+}
+
+/**
+ * Return a list of all the user preferences used by mod_assign.
+ *
+ * @return array
+ */
+function mod_assign_user_preferences() {
+    $preferences = array();
+    $preferences['assign_filter'] = array(
+        'type' => PARAM_ALPHA,
+        'null' => NULL_NOT_ALLOWED,
+        'default' => ''
+    );
+    $preferences['assign_workflowfilter'] = array(
+        'type' => PARAM_ALPHA,
+        'null' => NULL_NOT_ALLOWED,
+        'default' => ''
+    );
+    $preferences['assign_markerfilter'] = array(
+        'type' => PARAM_ALPHANUMEXT,
+        'null' => NULL_NOT_ALLOWED,
+        'default' => ''
+    );
+
+    return $preferences;
 }

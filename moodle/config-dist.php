@@ -284,16 +284,8 @@ $CFG->admin = 'admin';
 //      igbinary support to make the setting to work. Also, if you change the serializer you have to flush the database!
 //      $CFG->session_redis_serializer_use_igbinary = false; // Optional, default is PHP builtin serializer.
 //
-//   Memcache session handler (requires memcached server and memcache extension):
-//      $CFG->session_handler_class = '\core\session\memcache';
-//      $CFG->session_memcache_save_path = '127.0.0.1:11211';
-//      $CFG->session_memcache_acquire_lock_timeout = 120;
-//      ** NOTE: Memcache extension has less features than memcached and may be
-//         less reliable. Use memcached where possible or if you encounter
-//         session problems. **
-//
-// Please be aware that when selecting either Memcached or Memcache for sessions that it is advised to use a dedicated
-// memcache server. The memcache and memcached extensions do not provide isolated environments for individual uses.
+// Please be aware that when selecting Memcached for sessions that it is advised to use a dedicated
+// memcache server. The memcached extension does not provide isolated environments for individual uses.
 // Using the same server for other purposes (MUC for example) can lead to sessions being prematurely removed should
 // the other uses of the server purge the cache.
 //
@@ -379,6 +371,12 @@ $CFG->admin = 'admin';
 //   profilingincluded, profilingexcluded, profilingautofrec,
 //   profilingallowme, profilingallowall, profilinglifetime
 //       $CFG->earlyprofilingenabled = true;
+//
+// Disable database storage for profile data.
+// When using an exernal plugin to store profiling data it is often
+// desirable to not store the data in the database.
+//
+//      $CFG->disableprofilingtodatabase = true;
 //
 // Force displayed usernames
 //   A little hack to anonymise user names for all students.  If you set these
@@ -547,6 +545,15 @@ $CFG->admin = 'admin';
 // on a shared file system that supports locking.
 //      $CFG->lock_file_root = $CFG->dataroot . '/lock';
 //
+//
+// Alternative task logging.
+// Since Moodle 3.7 the output of al scheduled and adhoc tasks is stored in the database and it is possible to use an
+// alternative task logging mechanism.
+// To set the alternative task logging mechanism in config.php you can use the following settings, providing the
+// alternative class name that will be auto-loaded.
+//
+//      $CFG->task_log_class = '\\local_mytasklogger\\logger';
+//
 // Moodle 2.9 allows administrators to customise the list of supported file types.
 // To add a new filetype or override the definition of an existing one, set the
 // customfiletypes variable like this:
@@ -577,17 +584,6 @@ $CFG->admin = 'admin';
 //
 //      $CFG->upgradekey = 'put_some_password-like_value_here';
 //
-// Font used in exported PDF files. When generating a PDF, Moodle embeds a subset of
-// the font in the PDF file so it will be readable on the widest range of devices.
-// The default font is 'freesans' which is part of the GNU FreeFont collection.
-//
-//      $CFG->pdfexportfont = 'freesans';
-//
-// Disable login token validation for login pages. Login token validation is enabled
-// by default unless $CFG->alternateloginurl is set.
-//
-//      $CFG->disablelogintoken = true;
-//
 // Document conversion limit
 //
 // How many times the background task should attempt to convert a given attempt
@@ -595,6 +591,34 @@ $CFG->admin = 'admin';
 // mod_assign conversion task.
 //
 //      $CFG->conversionattemptlimit = 3;
+//
+// Font used in exported PDF files. When generating a PDF, Moodle embeds a subset of
+// the font in the PDF file so it will be readable on the widest range of devices.
+// The default font is 'freesans' which is part of the GNU FreeFont collection.
+//
+//      $CFG->pdfexportfont = 'freesans';
+//
+// Use the following flag to enable messagingallusers and set the default preference
+// value for existing users to allow them to be contacted by other site users.
+//
+//      $CFG->keepmessagingallusersenabled = true;
+//
+// Disable login token validation for login pages. Login token validation is enabled
+// by default unless $CFG->alternateloginurl is set.
+//
+//      $CFG->disablelogintoken = true;
+//
+// Moodle 3.7+ checks that cron is running frequently. If the time between cron runs
+// is greater than this value (in seconds), you get a warning on the admin page. (This
+// setting only controls whether or not the warning appears, it has no other effect.)
+//
+//      $CFG->expectedcronfrequency = 200;
+//
+// Session lock warning threshold. Long running pages should release the session using \core\session\manager::write_close().
+// Set this threshold to any value greater than 0 to add developer warnings when a page locks the session for too long.
+// The session should rarely be locked for more than 1 second. The input should be in seconds and may be a float.
+//
+//      $CFG->debugsessionlock = 5;
 //
 //=========================================================================
 // 7. SETTINGS FOR DEVELOPMENT SERVERS - not intended for production use!!!
@@ -625,11 +649,9 @@ $CFG->admin = 'admin';
 //   http://yuilibrary.com/yui/docs/api/classes/config.html#property_logInclude
 //   http://yuilibrary.com/yui/docs/api/classes/config.html#property_logExclude
 // $CFG->yuiloginclude = array(
-//     'moodle-core-dock-loader' => true,
 //     'moodle-course-categoryexpander' => true,
 // );
 // $CFG->yuilogexclude = array(
-//     'moodle-core-dock' => true,
 //     'moodle-core-notification' => true,
 // );
 //
@@ -855,6 +877,13 @@ $CFG->admin = 'admin';
 // BEHAT_DISABLE_HISTOGRAM
 // Example:
 //   define('BEHAT_DISABLE_HISTOGRAM', true);
+//
+// Mobile app Behat testing requires this option, pointing to a developer Moodle Mobile directory:
+//   $CFG->behat_ionic_dirroot = '/where/I/keep/my/git/checkouts/moodlemobile2';
+//
+// The following option can be used to indicate a running Ionic server (otherwise Behat will start
+// one automatically for each test run, which is convenient but takes ages):
+//   $CFG->behat_ionic_wwwroot = 'http://localhost:8100';
 //
 //=========================================================================
 // 12. DEVELOPER DATA GENERATOR

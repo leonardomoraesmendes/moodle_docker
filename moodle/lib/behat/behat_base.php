@@ -60,16 +60,28 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * A reduced timeout for cases where self::TIMEOUT is too much
      * and a simple $this->getSession()->getPage()->find() could not
      * be enough.
+     *
+     * @deprecated since Moodle 3.7 MDL-64979 - please use get_reduced_timeout() instead
+     * @todo MDL-64982 This will be deleted in Moodle 4.1
+     * @see behat_base::get_reduced_timeout()
      */
     const REDUCED_TIMEOUT = 2;
 
     /**
      * The timeout for each Behat step (load page, wait for an element to load...).
+     *
+     * @deprecated since Moodle 3.7 MDL-64979 - please use get_timeout() instead
+     * @todo MDL-64982 This will be deleted in Moodle 4.1
+     * @see behat_base::get_timeout()
      */
     const TIMEOUT = 6;
 
     /**
      * And extended timeout for specific cases.
+     *
+     * @deprecated since Moodle 3.7 MDL-64979 - please use get_extended_timeout() instead
+     * @todo MDL-64982 This will be deleted in Moodle 4.1
+     * @see behat_base::get_extended_timeout()
      */
     const EXTENDED_TIMEOUT = 10;
 
@@ -475,6 +487,21 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     }
 
     /**
+     * Checks if the current page is part of the mobile app.
+     *
+     * @return bool True if it's in the app
+     */
+    protected function is_in_app() : bool {
+        // Cannot be in the app if there's no @app tag on scenario.
+        if (!$this->has_tag('app')) {
+            return false;
+        }
+
+        // Check on page to see if it's an app page. Safest way is to look for added JavaScript.
+        return $this->getSession()->evaluateScript('typeof window.behat') === 'object';
+    }
+
+    /**
      * Spins around an element until it exists
      *
      * @throws ExpectationException
@@ -645,6 +672,16 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             debugging('Function behat_base::ensure_editors_are_loaded() is deprecated. It is no longer required.');
         }
         return;
+    }
+
+    /**
+     * Checks if the current scenario, or its feature, has a specified tag.
+     *
+     * @param string $tag Tag to check
+     * @return bool True if the tag exists in scenario or feature
+     */
+    public function has_tag(string $tag) : bool {
+        return array_key_exists($tag, behat_hooks::get_tags_for_scenario());
     }
 
     /**
@@ -956,6 +993,34 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         return $DB->get_record('user', ['id' => $userid]);
     }
 
+    /**
+     * Set current $USER, reset access cache.
+     *
+     * In some cases, behat will execute the code as admin but in many cases we need to set an specific user as some
+     * API's might rely on the logged user to take some action.
+     *
+     * @param null|int|stdClass $user user record, null or 0 means non-logged-in, positive integer means userid
+     */
+    public static function set_user($user = null) {
+        global $DB;
+
+        if (is_object($user)) {
+            $user = clone($user);
+        } else if (!$user) {
+            // Assign valid data to admin user (some generator-related code needs a valid user).
+            $user = $DB->get_record('user', array('username' => 'admin'));
+        } else {
+            $user = $DB->get_record('user', array('id' => $user));
+        }
+        unset($user->description);
+        unset($user->access);
+        unset($user->preference);
+
+        // Ensure session is empty, as it may contain caches and user specific info.
+        \core\session\manager::init_empty_session();
+
+        \core\session\manager::set_user($user);
+    }
     /**
      * Trigger click on node via javascript instead of actually clicking on it via pointer.
      *

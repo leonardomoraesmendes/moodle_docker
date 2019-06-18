@@ -733,6 +733,16 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/category:update'
     ),
 
+    'moodle/category:viewcourselist' => array(
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'guest' => CAP_ALLOW,
+            'user' => CAP_ALLOW,
+        )
+    ),
+
     'moodle/category:viewhiddencategories' => array(
 
         'captype' => 'read',
@@ -784,6 +794,16 @@ $capabilities = array(
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => array(
             'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'moodle/course:creategroupconversations' => array(
+        'riskbitmask' => RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         )
     ),
@@ -1014,6 +1034,26 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         ),
         'clonepermissionsfrom' => 'moodle/course:update'
+    ),
+
+    'moodle/course:changelockedcustomfields' => array(
+
+        'riskbitmask' => RISK_SPAM,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        ),
+    ),
+
+    'moodle/course:configurecustomfields' => array(
+
+        'riskbitmask' => RISK_SPAM,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'moodle/site:config'
     ),
 
     'moodle/course:renameroles' => array(
@@ -2411,5 +2451,40 @@ $capabilities = array(
         'archetypes' => array(
         )
     ),
+    // Allow message any user, regardlesss of the privacy preferences for messaging.
+    'moodle/site:messageanyuser' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
 
+    // Context locking/unlocking.
+    'moodle/site:managecontextlocks' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+        ],
+    ],
+
+    // Manual completion toggling.
+    'moodle/course:togglecompletion' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'user' => CAP_ALLOW,
+        ],
+    ],
+
+    'moodle/analytics:listowninsights' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'user' => CAP_ALLOW
+        )
+    ),
 );

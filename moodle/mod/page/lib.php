@@ -105,6 +105,7 @@ function page_add_instance($data, $mform = null) {
     }
     $displayoptions['printheading'] = $data->printheading;
     $displayoptions['printintro']   = $data->printintro;
+    $displayoptions['printlastmodified'] = $data->printlastmodified;
     $data->displayoptions = serialize($displayoptions);
 
     if ($mform) {
@@ -154,6 +155,7 @@ function page_update_instance($data, $mform) {
     }
     $displayoptions['printheading'] = $data->printheading;
     $displayoptions['printintro']   = $data->printintro;
+    $displayoptions['printlastmodified'] = $data->printlastmodified;
     $data->displayoptions = serialize($displayoptions);
 
     $data->content       = $data->page['text'];
@@ -487,6 +489,7 @@ function page_dndupload_handle($uploadinfo) {
     $data->popupwidth = $config->popupwidth;
     $data->printheading = $config->printheading;
     $data->printintro = $config->printintro;
+    $data->printlastmodified = $config->printlastmodified;
 
     return page_add_instance($data, null);
 }
