@@ -1,0 +1,38 @@
+version: '3.2'
+services:
+  ead:
+    image: moodle2
+    ports:
+      - "80:80"
+    links:
+      - "dbserver"
+      - "redis"
+    volumes:
+      - type: volume
+        source: "moodledata"
+        target: /var/www/moodledata
+  
+  dbserver:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - type: volume
+        source: "banco_moodle"
+        target: /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 4linux
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodleuser
+      MYSQL_PASSWORD: 4linux
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  moodledata:
+    external: true
+  banco_moodle:
+    external: true
