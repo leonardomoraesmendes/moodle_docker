@@ -1,2 +1,5 @@
-/banco/
-/moodledata/localcache
+banco/
+moodledata/localcache
+moodledata/cache
+moodledata/temp
+moodledata/trashdir
