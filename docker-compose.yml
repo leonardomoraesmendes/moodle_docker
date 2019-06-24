@@ -1,4 +1,4 @@
-version: '3.5'
+version: '2.4'
 services:
 
   moodle:
@@ -6,11 +6,13 @@ services:
     ports:
       - "80:80"
     volumes:
-      - "./moodle:/var/www/moodle"
       - "./moodledata:/var/www/moodledata"
     networks:
       - eadnet
     container_name: moodle
+    mem_limit: 2048m
+    cpu_count: 3
+    cpu_percent: 50
 
   db:
     image: mysql:5.7
@@ -26,7 +28,10 @@ services:
     networks:
       - eadnet
     container_name: mysql
-
+    mem_limit: 1024m
+    cpu_count: 2
+    cpu_percent: 50
+          
   redis:
     image: redis
     ports:
@@ -34,6 +39,9 @@ services:
     networks:
       - eadnet
     container_name: redis
+    mem_limit: 1024m
+    cpu_count: 2
+    cpu_percent: 50
 
 networks:
   eadnet:

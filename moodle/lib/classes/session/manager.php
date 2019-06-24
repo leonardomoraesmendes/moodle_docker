@@ -585,7 +585,7 @@ class manager {
             } else {
                 // Otherwise, if possibile lock exists want
                 // to clear it, but do not write session.
-                @session_abort();
+                @\session_abort();
             }
         } else {
             // Any indication session was started, attempt
