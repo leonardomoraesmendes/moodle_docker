@@ -2,14 +2,13 @@ version: '3.7'
 services:
 
   moodle:
-    build: .
+    image: moodlel
     ports:
       - "80:80"
     volumes:
-      - "./moodledata:/var/www/moodledata"
-    networks:
-      - eadnet
-    container_name: moodle
+      - type: volume
+        source: moodledata
+        target: /var/www/moodledata
     deploy:
       resources:
         limits:
@@ -29,10 +28,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - "./banco:/var/lib/mysql"
-    networks:
-      - eadnet
-    container_name: mysql
+      - "banco:/var/lib/mysql"
     deploy:
       resources:
         limits:
@@ -46,9 +42,6 @@ services:
     image: redis
     ports:
       - "6379:6379"
-    networks:
-      - eadnet
-    container_name: redis
     deploy:
       resources:
         limits:
@@ -60,5 +53,10 @@ services:
 networks:
   eadnet:
     driver: bridge  
-
-#Adicionar NFS
+volumes:
+  banco:
+  moodledata:
+    driver_opts:
+      type: "nfs"
+      o: "addr=200.100.50.101,nolock,soft,rw"
+      device: ":/home/suporte/storage/moodledata"
