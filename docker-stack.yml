@@ -2,7 +2,7 @@ version: '3.7'
 services:
 
   moodle:
-    image: moodlel
+    image: moodleleo
     ports:
       - "80:80"
     volumes:
@@ -12,10 +12,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.75'
+          cpus: '2.00'
           memory: 1024M
         reservations:
-          cpus: '0.25'
+          cpus: '0.50'
           memory: 512M
 
   db:
@@ -32,10 +32,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: '1.00'
           memory: 512M
         reservations:
-          cpus: '0.25'
+          cpus: '0.50'
           memory: 256M
           
   redis:
@@ -50,9 +50,6 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
-networks:
-  eadnet:
-    driver: bridge  
 volumes:
   banco:
   moodledata:
